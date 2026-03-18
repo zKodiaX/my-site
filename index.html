@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kodi's space</title>
+    <style>
+        @font-face {
+            font-family: 'mont';
+            src: url('mont.otf');
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'mont', sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: black; /* backup if video fails */
+        }
+
+        #bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            object-fit: cover;
+            opacity: 0.6; /* makes the video a bit darker so text pops */
+        }
+
+        /* the player */
+        .glassplayer {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            width: 180px;
+            z-index: 10000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        #draghandle {
+            cursor: grab;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            user-select: none;
+        }
+
+        #coverart {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .controls button {
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 10px;
+            font-family: 'mont';
+        }
+
+        #visualizer {
+            width: 100%;
+            height: 30px;
+            margin-top: 5px;
+        }
+
+        /* main container */
+        .glass-container {
+            margin-top: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            width: 320px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .link-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .link-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.02);
+        }
+
+        #donut {
+            font-size: 8px;
+            line-height: 8px;
+            white-space: pre;
+            color: rgba(255, 255, 255, 0.5);
+            margin: 10px 0;
+        }
+
+        .copyright {
+            font-size: 9px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <video autoplay muted loop id="bg-video">
+        <source src="bgvid.mp4" type="video/mp4">
+    </video>
+
+    <div style="margin-top: 50px; font-weight: bold; font-size: 14px; color: rgba(255,255,255,0.7);">kodi</div>
+    <pre id="donut"></pre>
+
+    <div class="glass-container">
+        <h2 style="text-align: center; margin-top: 0;">my stuff</h2>
+        <a href="https://kodii-vfx.myportfolio.com/" target="_blank" class="link-btn">adobe portfolio</a>
+        <a href="https://soundcloud.com/kodiii-684907473" target="_blank" class="link-btn">soundcloud</a>
+        <a href="https://guns.lol/kodii./" target="_blank" class="link-btn">guns.lol</a>
+        <a href="https://discord.com/users/957734628557459526/ target="_blank" class="link-btn">discord</a>
+        <div class="copyright">© 2026 kodi. all rights reserved.</div>
+    </div>
+
+    <div id="musicplayer" class="glassplayer">
+        <div id="draghandle">hellrise [snippet] - kodi</div>
+        <img src="hellrise.jpg" id="coverart">
+        <audio id="myaudio" loop>
+            <source src="hellrise.mp3" type="audio/mpeg">
+        </audio>
+        <div class="controls">
+            <button id="playbtn">play</button>
+            <button id="pausebtn">pause</button>
+        </div>
+        <canvas id="visualizer"></canvas>
+    </div>
+
+    <script>
+        // donut
+        let a=0, b=0;
+        const pre = document.getElementById('donut');
+        setInterval(() => {
+            const b_arr=[], z=[];
+            for(let k=0;k<1760;k++) { b_arr[k]=k%80===79?'\n':' '; z[k]=0; }
+            for(let j=0;j<6.28;j+=0.07) {
+                for(let i=0;i<6.28;i+=0.02) {
+                    const c=Math.sin(i),d=Math.cos(j),e=Math.sin(a),f=Math.sin(j),g=Math.cos(a),h=d+2,
+                    D=1/(c*h*e+f*g+5),l=Math.cos(i),m=Math.cos(b),n=Math.sin(b),t=c*h*g-f*e,
+                    x=0|(40+15*D*(l*h*m-t*n)),y=0|(12+7*D*(l*h*n+t*m)),o=x+80*y,
+                    N=0|(8*((f*e-c*d*g)*m-c*d*e-f*g-l*d*n));
+                    if(y<22 && y>=0 && x>=0 && x<79 && D>z[o]) { z[o]=D; b_arr[o]=".,-~:;=!*#$@"[N>0?N:0]; }
+                }
+            }
+            pre.innerHTML = b_arr.join('');
+            a+=0.04; b+=0.02;
+        }, 50);
+
+        // music & dragging
+        window.onload = function() {
+            const p=document.getElementById('musicplayer'), h=document.getElementById('draghandle'), 
+                  au=document.getElementById('myaudio'), pb=document.getElementById('playbtn'), 
+                  psb=document.getElementById('pausebtn'), cv=document.getElementById('visualizer'), ctx=cv.getContext('2d');
+            
+            let actx, an, src, data;
+            pb.onclick = () => {
+                if(!actx) {
+                    actx = new (window.AudioContext || window.webkitAudioContext)();
+                    an = actx.createAnalyser();
+                    src = actx.createMediaElementSource(au);
+                    src.connect(an); an.connect(actx.destination);
+                    an.fftSize = 64; data = new Uint8Array(an.frequencyBinCount);
+                    (function loop() {
+                        requestAnimationFrame(loop);
+                        an.getByteFrequencyData(data);
+                        ctx.clearRect(0,0,cv.width,cv.height); ctx.strokeStyle='white'; ctx.beginPath();
+                        let sw=cv.width/data.length, x=0;
+                        for(let i=0;i<data.length;i++) {
+                            let y=(data[i]/128.0*cv.height)/2;
+                            if(i===0) ctx.moveTo(x,cv.height-y); else ctx.lineTo(x,cv.height-y);
+                            x+=sw;
+                        }
+                        ctx.stroke();
+                    })();
+                }
+                au.play();
+            };
+            psb.onclick = () => au.pause();
+
+            let drag=false, ox, oy;
+            h.onmousedown=(e)=>{ drag=true; ox=e.clientX-p.offsetLeft; oy=e.clientY-p.offsetTop; };
+            document.onmousemove=(e)=>{ if(!drag)return; p.style.left=(e.clientX-ox)+'px'; p.style.top=(e.clientY-oy)+'px'; };
+            document.onmouseup=()=>{ drag=false; };
+        };
+    </script>
+</body>
+</html>
