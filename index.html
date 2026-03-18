@@ -5,6 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>kodi's space</title>
     <style>
+        .grain {
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    /* tiny base64 grain image */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.07; /* keep it low */
+    pointer-events: none;
+    z-index: 9999;
+    animation: noise 0.2s infinite;
+}
+#volume-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 0.4s ease, transform 0.3s ease;
+    transform: translateY(10px);
+    z-index: 10001;
+}
+
+/* pops up when you hover the corner area */
+#volume-container:hover {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#volume-slider {
+    -webkit-appearance: none;
+    width: 120px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    outline: none;
+    /* this is the magic part for the fill */
+    background-image: linear-gradient(white, white);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+#volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px white;
+}
+@keyframes noise {
+    0% { transform: translate(0,0); }
+    10% { transform: translate(-1%,-1%); }
+    20% { transform: translate(1%,1%); }
+    30% { transform: translate(-2%,1%); }
+    /* ... it just shakes slightly to look like film grain */
+}
+        /* hide the real mouse cursor */
+* {
+    cursor: none !important;
+}
+
+.cursor-glow {
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none; /* so u can still click stuff! */
+    z-index: 99999;
+    box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.6); /* the glow */
+    transition: transform 0.1s ease-out; /* makes it feel smooth */
+    transform: translate(-50%, -50%); /* centers it on the tip of the mouse */
+}
+.snowflake {
+    position: fixed;
+    top: -10px;
+    pointer-events: none;
+    z-index: 10002; /* way above the video */
+    user-select: none;
+    filter: drop-shadow(0 0 5px white); /* makes them pop 🥹 */
+}
+
+@keyframes fall {
+    0% { 
+        transform: translateY(-10vh) translateX(0) rotate(0deg); 
+        opacity: 0;
+    }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { 
+        transform: translateY(105vh) translateX(20px) rotate(360deg); 
+        opacity: 0;
+    }
+}
         @font-face {
             font-family: 'mont';
             src: url('mont.otf');
@@ -110,40 +211,79 @@
         }
 
         .link-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            text-decoration: none;
-            color: white;
-            font-weight: bold;
-            transition: 0.3s;
-        }
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 12px 20px; /* adjusted padding */
+    border-radius: 10px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    transition: 0.3s;
+    .link-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.02);
+    /* the glowing border */
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+    
+    /* aligns the logo and text */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px; #bg-video {
+    /* ... keep your existing stuff ... */
+    transition: filter 0.5s ease, opacity 0.5s ease;
+}
 
-        .link-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-            transform: scale(1.02);
-        }
+/* this class will be added by javascript in a sec */
+.video-blur {
+    filter: blur(8px) brightness(0.4);
+}
+}
 
-        #donut {
-            font-size: 8px;
-            line-height: 8px;
-            white-space: pre;
-            color: rgba(255, 255, 255, 0.5);
-            margin: 10px 0;
-        }
+/* keeps images from breaking */
+.link-btn img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    border-radius: 4px; /* optional, looks cleaner */
+}
 
-        .copyright {
-            font-size: 9px;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.3);
-            margin-top: 10px;
-            letter-spacing: 1px;
-        }
+.link-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.02);
+}
+
+#donut {
+    font-size: 8px;
+    line-height: 8px;
+    white-space: pre;
+    color: white; /* making it white makes the glow more intense */
+    margin: 10px 0;
+    
+    /* the glow layers */
+    filter: 
+        drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))
+        drop-shadow(0 0 30px rgba(255, 255, 255, 0.6))
+        drop-shadow(0 0 60px rgba(255, 255, 255, 0.4));
+        
+    /* optional: makes it slightly pulse so it feels alive */
+    animation: donut-glow 2s ease-in-out infinite;
+}
+
+@keyframes donut-glow {
+    0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 20px white); }
+    50% { opacity: 1; filter: drop-shadow(0 0 40px white); }
+}
     </style>
 </head>
 <body>
+    <div id="volume-container">
+    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+</div>
+    <div class="grain"></div>
+    <div class="cursor-glow"></div>
 
     <video autoplay muted loop id="bg-video">
         <source src="bgvid.mp4" type="video/mp4">
@@ -153,14 +293,28 @@
     <pre id="donut"></pre>
 
     <div class="glass-container">
-        <h2 style="text-align: center; margin-top: 0;">my stuff</h2>
-        <a href="https://kodii-vfx.myportfolio.com/" target="_blank" class="link-btn">adobe portfolio</a>
-        <a href="https://soundcloud.com/kodiii-684907473" target="_blank" class="link-btn">soundcloud</a>
-        <a href="https://guns.lol/kodii./" target="_blank" class="link-btn">guns.lol</a>
-        <a href="https://discord.com/users/957734628557459526/ target="_blank" class="link-btn">discord</a>
-        <p style="font-family: 'mont-light', sans-serif; font-size: 10px; text-align: center; color: rgba(255, 255, 255, 0.4); margin-top: 5px;">
+    <h2 style="text-align: center; margin-top: 0;">my stuff</h2>
+
+    <a href="https://kodii-vfx.myportfolio.com/" target="_blank" class="link-btn">
+        <img src="adobe icon.png"> adobe portfolio
+    </a>
+
+    <a href="https://soundcloud.com/kodiii-684907473" target="_blank" class="link-btn">
+        <img src="soundcloud icon.png"> soundcloud
+    </a>
+
+    <a href="https://guns.lol/kodii./" target="_blank" class="link-btn">
+        <img src="guns icon.png"> guns.lol
+    </a>
+
+    <a href="https://discord.com/users/957734628557459526/" target="_blank" class="link-btn">
+        <img src="discord icon.png"> discord
+    </a>
+
+    <p style="font-family: 'mont-light', sans-serif; font-size: 10px; text-align: center; color: rgba(255, 255, 255, 0.4); margin-top: 5px;">
     im a 14y/o from michigan. i make brutalist graphic design posters and alternative rock music. this is my personal space to share my work and connect with people. if you like what you see, feel free to reach out via discord. thanks for visiting!
-         <div class="copyright">© 2026 kodi. all rights reserved.</div>
+    <p style="font-family: 'mont-light', sans-serif; font-size: 10px; text-align: center; color: rgba(255, 255, 255, 0.4); margin-top: 5px;">
+    © 2026 kodi. all rights reserved.
 </p>
     </div>
 
@@ -178,6 +332,39 @@
     </div>
 
     <script>
+        const volSlider = document.getElementById('volume-slider');
+const myAudio = document.getElementById('myaudio');
+
+volSlider.addEventListener('input', (e) => {
+    const val = e.target.value;
+    myAudio.volume = val;
+    
+    // updates the solid white fill
+    const pct = val * 100 + '%';
+    volSlider.style.backgroundSize = pct + ' 100%';
+});
+
+// set initial fill
+volSlider.style.backgroundSize = '100% 100%';
+        const video = document.getElementById('bg-video');
+const allButtons = document.querySelectorAll('.link-btn');
+
+allButtons.forEach(btn => {
+    btn.onmouseenter = () => video.classList.add('video-blur');
+    btn.onmouseleave = () => video.classList.remove('video-blur');
+});
+        const cursor = document.querySelector('.cursor-glow');
+
+document.addEventListener('mousemove', (e) => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+});
+
+// optional: make it fuckin erect when you hover over buttons
+document.querySelectorAll('.link-btn, button').forEach(link => {
+    link.onmouseenter = () => cursor.style.transform = 'translate(-50%, -50%) scale(1.5)';
+    link.onmouseleave = () => cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+});
         // donut
         let a=0, b=0;
         const pre = document.getElementById('donut');
@@ -232,7 +419,34 @@
             h.onmousedown=(e)=>{ drag=true; ox=e.clientX-p.offsetLeft; oy=e.clientY-p.offsetTop; };
             document.onmousemove=(e)=>{ if(!drag)return; p.style.left=(e.clientX-ox)+'px'; p.style.top=(e.clientY-oy)+'px'; };
             document.onmouseup=()=>{ drag=false; };
-        };
+        };function createSnowflake() {
+    const snow = document.createElement('img');
+    snow.src = 'snow.png'; 
+    snow.classList.add('snowflake');
+    
+    // random horizontal start
+    snow.style.left = Math.random() * 100 + "vw";
+    
+    // random speed (between 4 and 9 seconds)
+    const duration = (Math.random() * 5 + 4) + "s";
+    
+    // apply animation directly
+    snow.style.animation = `fall ${duration} linear forwards`;
+    
+    // random size
+    const size = (Math.random() * 10 + 5) + "px";
+    snow.style.width = size;
+
+    document.body.appendChild(snow);
+
+    // clean up
+    setTimeout(() => {
+        snow.remove();
+    }, 9000);
+}
+
+// blizzard
+setInterval(createSnowflake, 300);
     </script>
 </body>
 </html>
